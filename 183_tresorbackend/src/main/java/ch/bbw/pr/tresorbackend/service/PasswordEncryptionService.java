@@ -1,6 +1,9 @@
 package ch.bbw.pr.tresorbackend.service;
 
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+
+import static org.springframework.security.crypto.bcrypt.BCrypt.hashpw;
 
 /**
  * PasswordEncryptionService
@@ -15,7 +18,10 @@ public class PasswordEncryptionService {
    }
 
    public String hashPassword(String password) {
-      //todo anpassen!
-      return password;
+      return BCrypt.hashpw(password, BCrypt.gensalt());
+   }
+
+   public boolean doPasswordMatch(String password, String hashedPassword){
+      return hashPassword(password).equals(hashedPassword);
    }
 }
