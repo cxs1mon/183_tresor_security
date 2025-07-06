@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {postUser} from "../../comunication/FetchUser";
+import ReCAPTCHA from 'react-google-recaptcha';
 
 /**
  * RegisterUser
  * @author Peter Rutschmann
  */
 function RegisterUser({loginValues, setLoginValues}) {
-    const navigate = useNavigate();
-
     const initialState = {
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        passwordConfirmation: "",
-        errorMessage: ""
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        passwordConfirmation: ''
     };
+
+    const navigate = useNavigate();
+    const [captchaToken, setCaptchaToken] = useState('');
     const [credentials, setCredentials] = useState(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -25,15 +26,30 @@ function RegisterUser({loginValues, setLoginValues}) {
         setErrorMessage('');
 
         //validate
-        if(credentials.password !== credentials.passwordConfirmation) {
+        if (credentials.password !== credentials.passwordConfirmation) {
             console.log("password != passwordConfirmation");
             setErrorMessage('Password and password-confirmation are not equal.');
             return;
         }
 
+        if (!captchaToken) {
+            setErrorMessage('Bitte Captcha bestätigen.');
+            return;
+        }
+        console.log('=== DEBUG: Captcha-Token vor dem Senden ===', captchaToken);
+
+        const payload = {
+            ...credentials,
+            captchaResponse: captchaToken
+        };
+
         try {
-            await postUser(credentials);
-            setLoginValues({userName: credentials.email, password: credentials.password});
+            await postUser(payload);
+
+            setLoginValues({
+                userName: credentials.email,
+                password: credentials.password
+            });
             setCredentials(initialState);
             navigate('/');
         } catch (error) {
@@ -41,47 +57,47 @@ function RegisterUser({loginValues, setLoginValues}) {
             setErrorMessage(error.message);
         }
     };
-
     return (
         <div>
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
             <h2>Register user</h2>
             <form onSubmit={handleSubmit}>
                 <section>
-                <aside>
-                    <div>
-                        <label>Firstname:</label>
-                        <input
-                            type="text"
-                            value={credentials.firstName}
-                            onChange={(e) =>
-                                setCredentials(prevValues => ({...prevValues, firstName: e.target.value}))}
-                            required
-                            placeholder="Please enter your firstname *"
-                        />
-                    </div>
-                    <div>
-                        <label>Lastname:</label>
-                        <input
-                            type="text"
-                            value={credentials.lastName}
-                            onChange={(e) =>
-                                setCredentials(prevValues => ({...prevValues, lastName: e.target.value}))}
-                            required
-                            placeholder="Please enter your lastname *"
-                        />
-                    </div>
-                    <div>
-                        <label>Email:</label>
-                        <input
-                            type="text"
-                            value={credentials.email}
-                            onChange={(e) =>
-                                setCredentials(prevValues => ({...prevValues, email: e.target.value}))}
-                            required
-                            placeholder="Please enter your email"
-                        />
-                    </div>
-                </aside>
+                    <aside>
+                        <div>
+                            <label>Firstname:</label>
+                            <input
+                                type="text"
+                                value={credentials.firstName}
+                                onChange={(e) =>
+                                    setCredentials(prevValues => ({...prevValues, firstName: e.target.value}))}
+                                required
+                                placeholder="Please enter your firstname *"
+                            />
+                        </div>
+                        <div>
+                            <label>Lastname:</label>
+                            <input
+                                type="text"
+                                value={credentials.lastName}
+                                onChange={(e) =>
+                                    setCredentials(prevValues => ({...prevValues, lastName: e.target.value}))}
+                                required
+                                placeholder="Please enter your lastname *"
+                            />
+                        </div>
+                        <div>
+                            <label>Email:</label>
+                            <input
+                                type="text"
+                                value={credentials.email}
+                                onChange={(e) =>
+                                    setCredentials(prevValues => ({...prevValues, email: e.target.value}))}
+                                required
+                                placeholder="Please enter your email"
+                            />
+                        </div>
+                    </aside>
                     <aside>
                         <div>
                             <label>Password:</label>
@@ -100,17 +116,25 @@ function RegisterUser({loginValues, setLoginValues}) {
                                 type="text"
                                 value={credentials.passwordConfirmation}
                                 onChange={(e) =>
-                                    setCredentials(prevValues => ({...prevValues, passwordConfirmation: e.target.value}))}
+                                    setCredentials(prevValues => ({
+                                        ...prevValues,
+                                        passwordConfirmation: e.target.value
+                                    }))}
                                 required
                                 placeholder="Please confirm your pwd *"
                             />
                         </div>
                     </aside>
                 </section>
+                <ReCAPTCHA
+                    sitekey='6LcjDHorAAAAAPdlSXZFOa8SWAM60FkFHIjl_B3j'
+                    onChange={token => setCaptchaToken(token)}
+                />
                 <button type="submit">Register</button>
-                {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+                {errorMessage && <p style={{color: 'red'}}>{errorMessage}</p>}
             </form>
         </div>
+
     );
 }
 
