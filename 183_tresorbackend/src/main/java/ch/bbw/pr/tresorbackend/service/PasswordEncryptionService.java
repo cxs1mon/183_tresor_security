@@ -20,4 +20,8 @@ public class PasswordEncryptionService {
    public String hashPassword(String password) {
       return BCrypt.hashpw(password, BCrypt.gensalt());
    }
+
+   public boolean doPasswordMatch(String password, String hashedPassword){
+      return hashPassword(password).equals(hashedPassword);
+   }
 }
