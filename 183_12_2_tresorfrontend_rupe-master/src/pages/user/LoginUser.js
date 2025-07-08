@@ -43,7 +43,7 @@ function LoginUser({loginValues, setLoginValues}) {
                         <div>
                             <label>Password:</label>
                             <input
-                                type="text"
+                                type="password"
                                 value={loginValues.password}
                                 onChange={(e) =>
                                     setLoginValues(prevValues => ({...prevValues, password: e.target.value}))}

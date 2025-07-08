@@ -54,7 +54,8 @@ export const postUser = async (content) => {
                 email: `${content.email}`,
                 password: `${content.password}`,
                 passwordConfirmation: `${content.passwordConfirmation}`,
-                captchaResponse: content.captchaResponse
+                captchaResponse: content.captchaResponse,
+                passwordValidation: content.passwordValidation
             })
         });
         if (response.status === 403) {
