@@ -5,6 +5,7 @@ import ch.bbw.pr.tresorbackend.service.PasswordEncryptionService;
 import ch.bbw.pr.tresorbackend.service.RecaptchaService;
 import ch.bbw.pr.tresorbackend.service.UserService;
 
+import ch.bbw.pr.tresorbackend.util.PasswordValidator;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -82,9 +83,13 @@ public class UserController {
         }
         System.out.println("UserController.createUser: input validation passed");
 
-        //password validation
-        //todo ergänzen
-        System.out.println("UserController.createUser, password validation passed");
+            //password validation
+        if (!PasswordValidator.isPasswordStrong(registerUser.getPassword())) {
+            JsonObject err = new JsonObject();
+            err.addProperty("message", "Password Validierung fehlgeschlagen");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new Gson().toJson(err));
+        }
 
         //transform registerUser to user
         User user = new User(

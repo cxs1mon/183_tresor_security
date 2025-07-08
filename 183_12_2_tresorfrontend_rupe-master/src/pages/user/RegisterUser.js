@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, {useRef, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {postUser} from "../../comunication/FetchUser";
 import ReCAPTCHA from 'react-google-recaptcha';
 
@@ -9,17 +9,22 @@ import ReCAPTCHA from 'react-google-recaptcha';
  */
 function RegisterUser({loginValues, setLoginValues}) {
     const initialState = {
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        passwordConfirmation: ''
+        firstName: '', lastName: '', email: '', password: '', passwordConfirmation: ''
     };
 
     const navigate = useNavigate();
     const [captchaToken, setCaptchaToken] = useState('');
     const [credentials, setCredentials] = useState(initialState);
     const [errorMessage, setErrorMessage] = useState('');
+
+    const isPasswordStrong = password => {
+        if (!password || password.length < 8) return false;
+        if (!/[A-Z]/.test(password)) return false;
+        if (!/[a-z]/.test(password)) return false;
+        if (!/[0-9]/.test(password)) return false;
+        if (!/[!@#$%^&*]/.test(password)) return false;
+        return true;
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -32,6 +37,11 @@ function RegisterUser({loginValues, setLoginValues}) {
             return;
         }
 
+        if (!isPasswordStrong(credentials.password)) {
+            setErrorMessage('Password must be at least 8 characters long, include uppercase, lowercase, a digit and a special character (!@#$%^&*).');
+            return;
+        }
+
         if (!captchaToken) {
             setErrorMessage('Bitte Captcha bestätigen.');
             return;
@@ -39,16 +49,14 @@ function RegisterUser({loginValues, setLoginValues}) {
         console.log('=== DEBUG: Captcha-Token vor dem Senden ===', captchaToken);
 
         const payload = {
-            ...credentials,
-            captchaResponse: captchaToken
+            ...credentials, captchaResponse: captchaToken
         };
 
         try {
             await postUser(payload);
 
             setLoginValues({
-                userName: credentials.email,
-                password: credentials.password
+                userName: credentials.email, password: credentials.password
             });
             setCredentials(initialState);
             navigate('/');
@@ -57,8 +65,7 @@ function RegisterUser({loginValues, setLoginValues}) {
             setErrorMessage(error.message);
         }
     };
-    return (
-        <div>
+    return (<div>
             <script src="https://www.google.com/recaptcha/api.js" async defer></script>
             <h2>Register user</h2>
             <form onSubmit={handleSubmit}>
@@ -69,8 +76,10 @@ function RegisterUser({loginValues, setLoginValues}) {
                             <input
                                 type="text"
                                 value={credentials.firstName}
-                                onChange={(e) =>
-                                    setCredentials(prevValues => ({...prevValues, firstName: e.target.value}))}
+                                onChange={(e) => setCredentials(prevValues => ({
+                                    ...prevValues,
+                                    firstName: e.target.value
+                                }))}
                                 required
                                 placeholder="Please enter your firstname *"
                             />
@@ -80,8 +89,10 @@ function RegisterUser({loginValues, setLoginValues}) {
                             <input
                                 type="text"
                                 value={credentials.lastName}
-                                onChange={(e) =>
-                                    setCredentials(prevValues => ({...prevValues, lastName: e.target.value}))}
+                                onChange={(e) => setCredentials(prevValues => ({
+                                    ...prevValues,
+                                    lastName: e.target.value
+                                }))}
                                 required
                                 placeholder="Please enter your lastname *"
                             />
@@ -89,10 +100,9 @@ function RegisterUser({loginValues, setLoginValues}) {
                         <div>
                             <label>Email:</label>
                             <input
-                                type="text"
+                                type="email"
                                 value={credentials.email}
-                                onChange={(e) =>
-                                    setCredentials(prevValues => ({...prevValues, email: e.target.value}))}
+                                onChange={(e) => setCredentials(prevValues => ({...prevValues, email: e.target.value}))}
                                 required
                                 placeholder="Please enter your email"
                             />
@@ -102,10 +112,12 @@ function RegisterUser({loginValues, setLoginValues}) {
                         <div>
                             <label>Password:</label>
                             <input
-                                type="text"
+                                type="password"
                                 value={credentials.password}
-                                onChange={(e) =>
-                                    setCredentials(prevValues => ({...prevValues, password: e.target.value}))}
+                                onChange={(e) => setCredentials(prevValues => ({
+                                    ...prevValues,
+                                    password: e.target.value
+                                }))}
                                 required
                                 placeholder="Please enter your pwd *"
                             />
@@ -113,13 +125,11 @@ function RegisterUser({loginValues, setLoginValues}) {
                         <div>
                             <label>Password confirmation:</label>
                             <input
-                                type="text"
+                                type="password"
                                 value={credentials.passwordConfirmation}
-                                onChange={(e) =>
-                                    setCredentials(prevValues => ({
-                                        ...prevValues,
-                                        passwordConfirmation: e.target.value
-                                    }))}
+                                onChange={(e) => setCredentials(prevValues => ({
+                                    ...prevValues, passwordConfirmation: e.target.value
+                                }))}
                                 required
                                 placeholder="Please confirm your pwd *"
                             />
